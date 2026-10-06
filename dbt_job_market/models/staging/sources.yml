@@ -121,3 +121,34 @@ sources:
           - name: batch_id
             tests:
               - not_null
+
+  - name: ops
+    description: >
+      Operational metadata tables used for observability and pipeline health
+      reporting.
+    schema: ops
+
+    tables:
+      - name: pipeline_runs
+        description: >
+          One row per observed end-to-end pipeline execution.
+        loaded_at_field: started_at
+        columns:
+          - name: pipeline_run_id
+            tests:
+              - not_null
+              - unique
+
+          - name: pipeline_name
+            tests:
+              - not_null
+
+          - name: status
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ["STARTED", "SUCCESS", "FAILED", "PARTIAL"]
+
+          - name: started_at
+            tests:
+              - not_null

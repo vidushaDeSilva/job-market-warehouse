@@ -503,3 +503,151 @@ def record_ingestion_retry(
             )
 
         connection.commit()
+
+
+def create_pipeline_run(
+    *,
+    pipeline_name: str,
+    trigger_type: str,
+    git_sha: str | None,
+) -> tuple[UUID, str]:
+    """
+    Create a new ops.pipeline_runs row.
+
+    Args:
+        pipeline_name: Name of the end-to-end pipeline.
+        trigger_type: manual, scheduled, or ci.
+        git_sha: Current git commit SHA if available.
+
+    Returns:
+        tuple[UUID, str]: pipeline_run_id and started_at timestamp as ISO text.
+    """
+
+    query = """
+        INSERT INTO ops.pipeline_runs (
+            pipeline_name,
+            started_at,
+            status,
+            trigger_type,
+            git_sha
+        )
+        VALUES (
+            %(pipeline_name)s,
+            NOW(),
+            'STARTED',
+            %(trigger_type)s,
+            %(git_sha)s
+        )
+        RETURNING
+            pipeline_run_id,
+            started_at;
+    """
+
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                query,
+                {
+                    "pipeline_name": pipeline_name,
+                    "trigger_type": trigger_type,
+                    "git_sha": git_sha,
+                },
+            )
+            row = cursor.fetchone()
+
+        connection.commit()
+
+    if row is None:
+        raise RuntimeError("Failed to create pipeline run.")
+
+    return row[0], row[1].isoformat()
+
+
+def update_pipeline_run(
+    *,
+    pipeline_run_id: UUID,
+    status: str,
+    ingestion_batch_id: UUID | None,
+    dbt_invocation_id: str | None,
+    dbt_status: str | None,
+    tests_passed: int,
+    tests_failed: int,
+    error_message: str | None,
+) -> None:
+    """
+    Update an ops.pipeline_runs row after pipeline execution.
+
+    Args:
+        pipeline_run_id: Pipeline run to update.
+        status: Final pipeline status.
+        ingestion_batch_id: Linked ingestion batch if available.
+        dbt_invocation_id: dbt invocation ID from run_results.json.
+        dbt_status: dbt execution status.
+        tests_passed: Number of dbt tests that passed.
+        tests_failed: Number of dbt tests that failed or errored.
+        error_message: Failure message if the pipeline failed.
+    """
+
+    query = """
+        UPDATE ops.pipeline_runs
+        SET
+            finished_at = NOW(),
+            status = %(status)s,
+            ingestion_batch_id = %(ingestion_batch_id)s,
+            dbt_invocation_id = %(dbt_invocation_id)s,
+            dbt_status = %(dbt_status)s,
+            tests_passed = %(tests_passed)s,
+            tests_failed = %(tests_failed)s,
+            error_message = %(error_message)s,
+            updated_at = NOW()
+        WHERE pipeline_run_id = %(pipeline_run_id)s;
+    """
+
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                query,
+                {
+                    "pipeline_run_id": pipeline_run_id,
+                    "status": status,
+                    "ingestion_batch_id": ingestion_batch_id,
+                    "dbt_invocation_id": dbt_invocation_id,
+                    "dbt_status": dbt_status,
+                    "tests_passed": tests_passed,
+                    "tests_failed": tests_failed,
+                    "error_message": error_message,
+                },
+            )
+
+        connection.commit()
+
+
+def get_latest_ingestion_batch_after(started_at: str) -> UUID | None:
+    """
+    Find the latest Adzuna ingestion batch started after a pipeline started.
+
+    Args:
+        started_at: Pipeline start timestamp.
+
+    Returns:
+        UUID | None: Latest batch ID if found.
+    """
+
+    query = """
+        SELECT batch_id
+        FROM raw.ingestion_batches
+        WHERE source_name = 'adzuna'
+          AND started_at >= %(started_at)s
+        ORDER BY started_at DESC
+        LIMIT 1;
+    """
+
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(query, {"started_at": started_at})
+            row = cursor.fetchone()
+
+    if row is None:
+        return None
+
+    return row[0]

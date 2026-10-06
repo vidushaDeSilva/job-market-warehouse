@@ -15,6 +15,7 @@ DBT := dbt
 	check-db \
 	db-init \
 	ingest-adzuna \
+	observed-pipeline \
 	dbt-debug \
 	dbt-parse \
 	dbt-seed \
@@ -32,6 +33,12 @@ DBT := dbt
 	sprint7-check \
 	sprint8-check \
 	sprint9-check \
+	sprint10-check \
+	retention-dry-run \
+	retention-apply \
+	dbt-build-full-refresh \
+	dbt-build-test \
+	sprint11-check \
 	clean
 
 
@@ -49,6 +56,10 @@ db-init:
 
 ingest-adzuna:
 	$(PYTHON) scripts/run_adzuna_ingestion.py
+
+
+observed-pipeline:
+	$(PYTHON) scripts/run_observed_pipeline.py
 
 
 dbt-debug:
@@ -124,9 +135,36 @@ sprint9-check: dbt-build dbt-snapshot
 	$(PYTHON) scripts/check_sprint9.py
 
 
+sprint10-check:
+	$(PYTHON) scripts/check_sprint10.py
+
+
 clean:
 	rm -rf dbt_job_market/target
 	rm -rf dbt_job_market/logs
 	rm -rf dbt_job_market/dbt_packages
 	rm -rf *.egg-info
 	rm -rf ingestion/src/*.egg-info
+
+
+retention-dry-run:
+	$(PYTHON) scripts/apply_retention_policies.py
+
+
+retention-apply:
+	$(PYTHON) scripts/apply_retention_policies.py --execute
+
+
+dbt-build-full-refresh:
+	set -a; [ -f .env ] && . ./.env; set +a; \
+	$(DBT) build --full-refresh --project-dir dbt_job_market --profiles-dir dbt_job_market
+
+
+dbt-build-test:
+	set -a; [ -f .env ] && . ./.env; set +a; \
+	$(DBT) build --target test --project-dir dbt_job_market --profiles-dir dbt_job_market
+
+
+sprint11-check: db-init
+	$(PYTHON) scripts/check_sprint11.py
+	$(PYTHON) scripts/apply_retention_policies.py
