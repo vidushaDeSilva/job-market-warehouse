@@ -39,6 +39,8 @@ DBT := dbt
 	dbt-build-full-refresh \
 	dbt-build-test \
 	sprint11-check \
+	orchestrated-pipeline \
+	sprint13-check \
 	clean
 
 
@@ -59,7 +61,7 @@ ingest-adzuna:
 
 
 observed-pipeline:
-	$(PYTHON) scripts/run_observed_pipeline.py
+	$(PYTHON) scripts/orchestrate_pipeline.py
 
 
 dbt-debug:
@@ -168,3 +170,11 @@ dbt-build-test:
 sprint11-check: db-init
 	$(PYTHON) scripts/check_sprint11.py
 	$(PYTHON) scripts/apply_retention_policies.py
+
+
+orchestrated-pipeline:
+	$(PYTHON) scripts/orchestrate_pipeline.py
+
+
+sprint13-check:
+	$(PYTHON) scripts/check_sprint13.py

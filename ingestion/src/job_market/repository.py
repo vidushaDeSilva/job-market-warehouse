@@ -651,3 +651,108 @@ def get_latest_ingestion_batch_after(started_at: str) -> UUID | None:
         return None
 
     return row[0]
+
+
+def get_ingestion_batch_summary(batch_id: UUID) -> dict | None:
+    """
+    Fetch summary information for one ingestion batch.
+
+    Args:
+        batch_id: Ingestion batch ID.
+
+    Returns:
+        dict | None: Batch summary, or None if the batch does not exist.
+    """
+
+    query = """
+        SELECT
+            batch_id,
+            status,
+            started_at,
+            finished_at,
+            records_received,
+            records_loaded,
+            records_quarantined,
+            api_requests_made,
+            api_success_count,
+            api_failure_count,
+            api_rate_limit_hit,
+            failure_type,
+            error_message
+        FROM raw.ingestion_batches
+        WHERE batch_id = %(batch_id)s;
+    """
+
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(query, {"batch_id": batch_id})
+            row = cursor.fetchone()
+
+    if row is None:
+        return None
+
+    return {
+        "batch_id": row[0],
+        "status": row[1],
+        "started_at": row[2],
+        "finished_at": row[3],
+        "records_received": row[4],
+        "records_loaded": row[5],
+        "records_quarantined": row[6],
+        "api_requests_made": row[7],
+        "api_success_count": row[8],
+        "api_failure_count": row[9],
+        "api_rate_limit_hit": row[10],
+        "failure_type": row[11],
+        "error_message": row[12],
+    }
+
+
+def mark_pipeline_run_failed(
+    *,
+    pipeline_run_id: UUID,
+    ingestion_batch_id: UUID | None,
+    dbt_invocation_id: str | None,
+    dbt_status: str | None,
+    tests_passed: int,
+    tests_failed: int,
+    error_message: str,
+) -> None:
+    """
+    Convenience wrapper for marking a pipeline run as FAILED.
+    """
+
+    update_pipeline_run(
+        pipeline_run_id=pipeline_run_id,
+        status="FAILED",
+        ingestion_batch_id=ingestion_batch_id,
+        dbt_invocation_id=dbt_invocation_id,
+        dbt_status=dbt_status,
+        tests_passed=tests_passed,
+        tests_failed=tests_failed,
+        error_message=error_message,
+    )
+
+
+def mark_pipeline_run_success(
+    *,
+    pipeline_run_id: UUID,
+    ingestion_batch_id: UUID | None,
+    dbt_invocation_id: str | None,
+    tests_passed: int,
+    tests_failed: int,
+) -> None:
+    """
+    Convenience wrapper for marking a pipeline run as SUCCESS.
+    """
+
+    update_pipeline_run(
+        pipeline_run_id=pipeline_run_id,
+        status="SUCCESS",
+        ingestion_batch_id=ingestion_batch_id,
+        dbt_invocation_id=dbt_invocation_id,
+        dbt_status="SUCCESS",
+        tests_passed=tests_passed,
+        tests_failed=tests_failed,
+        error_message=None,
+    )
