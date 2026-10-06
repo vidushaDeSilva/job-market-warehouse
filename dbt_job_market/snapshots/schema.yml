@@ -1,0 +1,52 @@
+version: 2
+
+snapshots:
+  - name: job_postings_snapshot
+    description: >
+      Historical snapshot of canonical job postings. This snapshot tracks
+      meaningful changes to job title, company, location, description hash,
+      salary, category, contract fields, and source-created timestamp.
+      It uses dbt's check strategy and creates SCD Type 2-style validity
+      intervals using dbt_valid_from and dbt_valid_to.
+
+    columns:
+      - name: job_id
+        description: Stable canonical job identifier.
+        tests:
+          - not_null
+
+      - name: dbt_scd_id
+        description: dbt-generated unique identifier for each historical version.
+        tests:
+          - not_null
+          - unique
+
+      - name: dbt_valid_from
+        description: Timestamp from which this historical version is valid.
+        tests:
+          - not_null
+
+      - name: dbt_valid_to
+        description: >
+          Timestamp until which this historical version is valid. NULL means
+          this is the current version.
+
+      - name: job_title
+        description: Job title for this historical version.
+        tests:
+          - not_null
+
+      - name: company_name
+        description: Company name for this historical version.
+        tests:
+          - not_null
+
+      - name: description_hash
+        description: Hash of the cleaned job description.
+        tests:
+          - not_null
+
+      - name: observation_count
+        description: Number of source observations known at the time of snapshotting.
+        tests:
+          - not_null

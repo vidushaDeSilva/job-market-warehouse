@@ -1,0 +1,54 @@
+# dbt_project.yml
+# Main dbt project configuration for the Job Market Analytics Warehouse.
+#
+# dbt owns the transformation layer:
+#   raw source tables          -> owned by Python/PostgreSQL ingestion
+#   dev_staging models        -> owned by dbt
+#   dev_intermediate models   -> owned by dbt
+#   dev_marts models          -> owned by dbt
+#
+# With DBT_SCHEMA=dev, dbt-postgres will create schemas such as:
+#   dev_staging
+#   dev_intermediate
+#   dev_marts
+
+name: "job_market_warehouse"
+version: "1.0.0"
+config-version: 2
+
+profile: "job_market_profile"
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+snapshot-paths: ["snapshots"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+
+target-path: "target"
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+  - "logs"
+
+models:
+  job_market_warehouse:
+    staging:
+      +schema: staging
+      +materialized: view
+
+    intermediate:
+      +schema: intermediate
+      +materialized: view
+
+    marts:
+      +schema: marts
+      +materialized: table
+
+seeds:
+  job_market_warehouse:
+    +schema: reference
+
+snapshots:
+  job_market_warehouse:
+    +target_schema: snapshots

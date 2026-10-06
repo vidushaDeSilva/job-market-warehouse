@@ -1,0 +1,658 @@
+version: 2
+
+models:
+  - name: dim_companies
+    description: >
+      Company dimension. One row per normalized company. Used by
+      fact_job_postings through company_id.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: company_id
+        data_type: text
+        description: Stable deterministic company identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: company_name_normalized
+        data_type: text
+        description: Lowercase normalized company name used for joins.
+        tests:
+          - not_null
+          - unique
+
+      - name: company_name
+        data_type: text
+        description: Human-readable company name.
+        tests:
+          - not_null
+
+      - name: first_seen_at
+        data_type: timestamp with time zone
+        description: First time any job from this company was observed.
+        tests:
+          - not_null
+
+      - name: last_seen_at
+        data_type: timestamp with time zone
+        description: Most recent time any job from this company was observed.
+        tests:
+          - not_null
+
+      - name: total_job_postings
+        data_type: integer
+        description: Number of canonical job postings linked to this company.
+        tests:
+          - not_null
+
+      - name: total_source_observations
+        data_type: integer
+        description: Number of source observations linked to this company.
+        tests:
+          - not_null
+
+  - name: dim_skills
+    description: >
+      Skill dimension. One row per normalized active skill from the
+      skill_dictionary seed.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: skill_id
+        data_type: text
+        description: Stable deterministic skill identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: skill_name
+        data_type: text
+        description: Normalized skill name.
+        tests:
+          - not_null
+          - unique
+
+      - name: skill_category
+        data_type: text
+        description: Higher-level skill category.
+        tests:
+          - not_null
+
+      - name: active_alias_count
+        data_type: integer
+        description: Number of active aliases available for this skill.
+        tests:
+          - not_null
+
+      - name: is_active
+        data_type: boolean
+        description: Whether the skill is active for matching.
+        tests:
+          - not_null
+
+  - name: dim_roles
+    description: >
+      Role dimension. One row per role_family x seniority_level x work_mode
+      combination.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: role_id
+        data_type: text
+        description: Stable deterministic role identifier.
+        tests:
+          - not_null
+          - unique
+
+      - name: role_family
+        data_type: text
+        description: Standardized role family.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - data_engineering
+                - analytics_engineering
+                - data_analytics
+                - data_science
+                - software_engineering
+                - other
+                - unknown
+
+      - name: seniority_level
+        data_type: text
+        description: Standardized seniority level.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - internship
+                - entry
+                - mid
+                - senior
+                - lead
+                - unknown
+
+      - name: work_mode
+        data_type: text
+        description: Work mode classification.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - remote
+                - hybrid
+                - onsite
+                - unknown
+
+      - name: role_label
+        data_type: text
+        description: Human-readable role label.
+        tests:
+          - not_null
+
+      - name: jobs_observed
+        data_type: integer
+        description: Number of canonical jobs observed for this role combination.
+        tests:
+          - not_null
+
+  - name: fact_job_postings
+    description: >
+      Main job posting fact table. One row per canonical job posting.
+      Links to dim_companies and dim_roles.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: job_id
+        data_type: text
+        description: Stable canonical job identifier.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('int_job_posting_deduped')
+              field: job_id
+
+      - name: company_id
+        data_type: text
+        description: Foreign key to dim_companies.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_companies')
+              field: company_id
+
+      - name: role_id
+        data_type: text
+        description: Foreign key to dim_roles.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_roles')
+              field: role_id
+
+      - name: latest_source_observation_id
+        data_type: uuid
+        description: Latest source observation used to represent the canonical job.
+        tests:
+          - not_null
+
+      - name: adzuna_job_id
+        data_type: text
+        description: Source-side Adzuna job ID when available.
+
+      - name: job_title
+        data_type: text
+        description: Latest observed job title.
+        tests:
+          - not_null
+
+      - name: company_name
+        data_type: text
+        description: Latest observed company name.
+        tests:
+          - not_null
+
+      - name: location_text
+        data_type: text
+        description: Latest observed job location text.
+
+      - name: redirect_url
+        data_type: text
+        description: Source redirect URL.
+
+      - name: source_created_at
+        data_type: timestamp with time zone
+        description: Source-side job creation timestamp.
+
+      - name: first_seen_at
+        data_type: timestamp with time zone
+        description: First time this canonical job was observed.
+        tests:
+          - not_null
+
+      - name: last_seen_at
+        data_type: timestamp with time zone
+        description: Most recent time this canonical job was observed.
+        tests:
+          - not_null
+
+      - name: latest_collected_at
+        data_type: timestamp with time zone
+        description: Collection timestamp of latest selected observation.
+        tests:
+          - not_null
+
+      - name: observation_count
+        data_type: integer
+        description: Number of source observations collapsed into this canonical job.
+        tests:
+          - not_null
+
+      - name: salary_min
+        data_type: numeric
+        description: Minimum salary when available.
+
+      - name: salary_max
+        data_type: numeric
+        description: Maximum salary when available.
+
+      - name: salary_midpoint
+        data_type: numeric
+        description: Salary midpoint when salary is available.
+
+      - name: salary_currency
+        data_type: text
+        description: Salary currency when inferred or available.
+
+      - name: salary_period
+        data_type: text
+        description: Salary period.
+
+      - name: salary_parse_status
+        data_type: text
+        description: Salary parsing/availability status.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - missing
+                - parsed
+                - partial_min_only
+                - partial_max_only
+                - invalid_range
+
+      - name: salary_is_predicted
+        data_type: boolean
+        description: Whether Adzuna marked salary as predicted.
+
+      - name: role_family
+        data_type: text
+        description: Denormalized role family for convenience.
+        tests:
+          - not_null
+
+      - name: seniority_level
+        data_type: text
+        description: Denormalized seniority level for convenience.
+        tests:
+          - not_null
+
+      - name: work_mode
+        data_type: text
+        description: Denormalized work mode for convenience.
+        tests:
+          - not_null
+
+      - name: classification_rule
+        data_type: text
+        description: Rule that produced the role classification.
+        tests:
+          - not_null
+
+      - name: classification_confidence
+        data_type: text
+        description: Rule-based classification confidence.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - high
+                - medium
+                - low
+
+      - name: country_code
+        data_type: text
+        description: Country code used for source query.
+        tests:
+          - not_null
+
+      - name: search_keyword
+        data_type: text
+        description: Adzuna query keyword.
+        tests:
+          - not_null
+
+      - name: search_location
+        data_type: text
+        description: Adzuna query location.
+
+      - name: category_label
+        data_type: text
+        description: Source category label.
+
+      - name: category_tag
+        data_type: text
+        description: Source category tag.
+
+      - name: contract_time
+        data_type: text
+        description: Source contract time.
+
+      - name: contract_type
+        data_type: text
+        description: Source contract type.
+
+      - name: latitude
+        data_type: numeric
+        description: Latitude when available.
+
+      - name: longitude
+        data_type: numeric
+        description: Longitude when available.
+
+      - name: latest_record_hash
+        data_type: text
+        description: Record hash of latest source observation.
+        tests:
+          - not_null
+
+  - name: fact_job_skill_mentions
+    description: >
+      Job-skill bridge/fact table. One row per canonical job x skill.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: job_skill_id
+        data_type: text
+        description: Stable deterministic identifier for job x skill.
+        tests:
+          - not_null
+          - unique
+
+      - name: job_id
+        data_type: text
+        description: Foreign key to fact_job_postings.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('fact_job_postings')
+              field: job_id
+
+      - name: skill_id
+        data_type: text
+        description: Foreign key to dim_skills.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_skills')
+              field: skill_id
+
+      - name: skill_name
+        data_type: text
+        description: Denormalized skill name for convenience.
+        tests:
+          - not_null
+
+      - name: skill_category
+        data_type: text
+        description: Denormalized skill category for convenience.
+        tests:
+          - not_null
+
+      - name: matched_alias_count
+        data_type: integer
+        description: Number of aliases that matched this job for this skill.
+        tests:
+          - not_null
+
+      - name: matched_aliases
+        data_type: text
+        description: Aliases that matched this job.
+        tests:
+          - not_null
+
+      - name: match_types
+        data_type: text
+        description: Match types that produced the match.
+        tests:
+          - not_null
+
+  - name: mart_skill_demand_weekly
+    description: >
+      Weekly skill demand mart. One row per week_start_date x skill_id.
+      job counts are based on deduplicated canonical job postings, not raw API
+      observations.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: week_start_date
+        data_type: date
+        description: Monday-starting week based on fact_job_postings.first_seen_at.
+        tests:
+          - not_null
+
+      - name: skill_id
+        data_type: text
+        description: Foreign key to dim_skills.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_skills')
+              field: skill_id
+
+      - name: skill_name
+        data_type: text
+        description: Skill name for readability.
+        tests:
+          - not_null
+
+      - name: skill_category
+        data_type: text
+        description: Skill category for grouping.
+        tests:
+          - not_null
+
+      - name: unique_job_count
+        data_type: integer
+        description: Number of canonical jobs first seen in the week that mention the skill.
+        tests:
+          - not_null
+
+      - name: total_unique_jobs_in_week
+        data_type: integer
+        description: Total canonical jobs first seen in the week.
+        tests:
+          - not_null
+
+      - name: share_of_jobs
+        data_type: numeric
+        description: unique_job_count divided by total_unique_jobs_in_week.
+        tests:
+          - not_null
+
+  - name: mart_company_hiring_summary
+    description: >
+      Company-level hiring summary. One row per company. All job counts are
+      based on deduplicated canonical job postings.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: company_id
+        data_type: text
+        description: Foreign key to dim_companies.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('dim_companies')
+              field: company_id
+
+      - name: company_name
+        data_type: text
+        description: Human-readable company name.
+        tests:
+          - not_null
+
+      - name: job_count
+        data_type: integer
+        description: Number of canonical job postings linked to the company.
+        tests:
+          - not_null
+
+      - name: data_engineering_jobs
+        data_type: integer
+        description: Number of company jobs classified as data_engineering.
+        tests:
+          - not_null
+
+      - name: analytics_engineering_jobs
+        data_type: integer
+        description: Number of company jobs classified as analytics_engineering.
+        tests:
+          - not_null
+
+      - name: remote_jobs
+        data_type: integer
+        description: Number of company jobs classified as remote.
+        tests:
+          - not_null
+
+      - name: jobs_with_salary
+        data_type: integer
+        description: Number of company jobs where salary is available.
+        tests:
+          - not_null
+
+      - name: salary_coverage
+        data_type: numeric
+        description: jobs_with_salary divided by job_count.
+        tests:
+          - not_null
+
+      - name: remote_share
+        data_type: numeric
+        description: remote_jobs divided by job_count.
+        tests:
+          - not_null
+
+      - name: first_seen_at
+        data_type: timestamp with time zone
+        description: Earliest observed job timestamp for the company.
+        tests:
+          - not_null
+
+      - name: last_seen_at
+        data_type: timestamp with time zone
+        description: Latest observed job timestamp for the company.
+        tests:
+          - not_null
+
+  - name: mart_role_market_summary
+    description: >
+      Role-family market summary. One row per role_family. All job counts are
+      based on deduplicated canonical job postings.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: role_family
+        data_type: text
+        description: Standardized role family.
+        tests:
+          - not_null
+          - unique
+          - accepted_values:
+              values:
+                - data_engineering
+                - analytics_engineering
+                - data_analytics
+                - data_science
+                - software_engineering
+                - other
+                - unknown
+
+      - name: job_count
+        data_type: integer
+        description: Number of canonical jobs in the role family.
+        tests:
+          - not_null
+
+      - name: jobs_with_salary
+        data_type: integer
+        description: Number of role-family jobs with salary available.
+        tests:
+          - not_null
+
+      - name: median_salary
+        data_type: numeric
+        description: Median salary_midpoint for jobs with available salary.
+
+      - name: salary_coverage
+        data_type: numeric
+        description: jobs_with_salary divided by job_count.
+        tests:
+          - not_null
+
+      - name: remote_jobs
+        data_type: integer
+        description: Number of role-family jobs classified as remote.
+        tests:
+          - not_null
+
+      - name: remote_share
+        data_type: numeric
+        description: remote_jobs divided by job_count.
+        tests:
+          - not_null
+
+      - name: top_skill_id
+        data_type: text
+        description: Skill ID of the most common skill for the role family.
+
+      - name: top_skill_name
+        data_type: text
+        description: Most common skill for the role family.
+
+      - name: top_skill_job_count
+        data_type: integer
+        description: Number of jobs in the role family mentioning the top skill.
+        tests:
+          - not_null
+
+      - name: top_skill_share
+        data_type: numeric
+        description: top_skill_job_count divided by job_count.
+        tests:
+          - not_null
+
+      - name: first_seen_at
+        data_type: timestamp with time zone
+        description: Earliest observed job timestamp in the role family.
+        tests:
+          - not_null
+
+      - name: last_seen_at
+        data_type: timestamp with time zone
+        description: Latest observed job timestamp in the role family.
+        tests:
+          - not_null

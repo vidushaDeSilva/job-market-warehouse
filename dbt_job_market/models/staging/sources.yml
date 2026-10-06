@@ -1,0 +1,123 @@
+version: 2
+
+sources:
+  - name: raw
+    description: >
+      Raw source and ingestion metadata tables loaded by the Python ingestion
+      pipeline. dbt treats these tables as external inputs and does not own them.
+    schema: raw
+
+    tables:
+      - name: source_adzuna_jobs
+        description: >
+          Raw Adzuna job observations. One row represents one job returned by
+          one API response/page. This table is intentionally not deduplicated.
+        loaded_at_field: collected_at
+        freshness:
+          warn_after:
+            count: 2
+            period: day
+          error_after:
+            count: 7
+            period: day
+        columns:
+          - name: raw_adzuna_job_id
+            description: Unique identifier for the raw job observation.
+            tests:
+              - not_null
+              - unique
+
+          - name: batch_id
+            description: Ingestion batch that loaded this job observation.
+            tests:
+              - not_null
+
+          - name: api_response_id
+            description: API response/page that contained this job observation.
+            tests:
+              - not_null
+
+          - name: title
+            description: Raw job title from Adzuna.
+            tests:
+              - not_null
+
+          - name: company_name
+            description: Raw company name from Adzuna.
+            tests:
+              - not_null
+
+          - name: description_text
+            description: Raw job description from Adzuna.
+            tests:
+              - not_null
+
+          - name: record_hash
+            description: Hash of selected source fields used for change and identity checks.
+            tests:
+              - not_null
+
+          - name: collected_at
+            description: Timestamp when this observation was collected by the pipeline.
+            tests:
+              - not_null
+
+      - name: ingestion_batches
+        description: >
+          Metadata for Adzuna ingestion attempts. One row represents one
+          ingestion batch execution.
+        loaded_at_field: started_at
+        columns:
+          - name: batch_id
+            description: Unique identifier for an ingestion batch.
+            tests:
+              - not_null
+              - unique
+
+          - name: status
+            description: Batch status.
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ["STARTED", "SUCCESS", "FAILED", "PARTIAL"]
+
+          - name: source_name
+            description: Source system name, currently adzuna.
+            tests:
+              - not_null
+
+      - name: adzuna_api_responses
+        description: >
+          Page-level Adzuna API responses. One row represents one API request/page.
+        loaded_at_field: response_received_at
+        columns:
+          - name: api_response_id
+            tests:
+              - not_null
+              - unique
+
+          - name: batch_id
+            tests:
+              - not_null
+
+          - name: query_config_id
+            tests:
+              - not_null
+
+          - name: response_status_code
+            tests:
+              - not_null
+
+      - name: quarantined_records
+        description: >
+          Raw records that failed validation or parsing during ingestion.
+        loaded_at_field: created_at
+        columns:
+          - name: quarantine_id
+            tests:
+              - not_null
+              - unique
+
+          - name: batch_id
+            tests:
+              - not_null

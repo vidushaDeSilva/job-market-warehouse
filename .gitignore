@@ -1,0 +1,40 @@
+# .gitignore
+# Files and folders that should not be committed to Git.
+# This protects secrets, local environments, caches, logs, and generated dbt artifacts.
+
+# Python virtual environment
+.venv/
+venv/
+.job/
+
+# Environment variables and secrets
+.env
+.env.local
+
+# Python cache files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# dbt generated artifacts
+dbt_job_market/target/
+dbt_job_market/dbt_packages/
+dbt_job_market/logs/
+
+# Local notebooks or temporary files
+*.ipynb_checkpoints/
+tmp/
+temp/
+
+# Editor settings
+.vscode/
+.idea/.job/

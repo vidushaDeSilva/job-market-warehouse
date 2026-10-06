@@ -1,0 +1,108 @@
+version: 2
+
+models:
+  - name: stg_ingestion_batches
+    description: >
+      Cleaned ingestion batch metadata. One row represents one ingestion batch.
+      This model standardizes status values, timestamps, counters, retry fields,
+      and failure metadata.
+    columns:
+      - name: batch_id
+        description: Unique identifier for an ingestion batch.
+        tests:
+          - not_null
+          - unique
+
+      - name: source_name
+        description: Source system name.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["adzuna"]
+
+      - name: batch_status
+        description: Standardized ingestion batch status.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["STARTED", "SUCCESS", "FAILED", "PARTIAL"]
+
+      - name: records_received
+        description: Number of job payloads received from the API.
+        tests:
+          - not_null
+
+      - name: records_loaded
+        description: Number of job observations successfully inserted.
+        tests:
+          - not_null
+
+      - name: records_quarantined
+        description: Number of job payloads quarantined during ingestion.
+        tests:
+          - not_null
+
+      - name: api_requests_made
+        description: Number of API requests attempted during the batch.
+        tests:
+          - not_null
+
+  - name: stg_adzuna_jobs
+    description: >
+      Cleaned Adzuna job observations from SUCCESS ingestion batches only.
+      One row represents one raw Adzuna job observation, not a deduplicated
+      canonical job.
+    columns:
+      - name: source_observation_id
+        description: Unique identifier for the raw job observation.
+        tests:
+          - not_null
+          - unique
+
+      - name: api_response_id
+        description: API response/page that contained this job observation.
+        tests:
+          - not_null
+
+      - name: batch_id
+        description: SUCCESS ingestion batch that loaded this job observation.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_ingestion_batches')
+              field: batch_id
+
+      - name: query_config_id
+        description: Query configuration used to collect the job observation.
+        tests:
+          - not_null
+
+      - name: job_title
+        description: Cleaned job title.
+        tests:
+          - not_null
+
+      - name: company_name
+        description: Cleaned company name.
+        tests:
+          - not_null
+
+      - name: description_text_clean
+        description: Cleaned job description with basic HTML tags removed.
+        tests:
+          - not_null
+
+      - name: country_code
+        description: Lowercase country code used in the Adzuna API query.
+        tests:
+          - not_null
+
+      - name: record_hash
+        description: Hash created during ingestion from selected source fields.
+        tests:
+          - not_null
+
+      - name: collected_at
+        description: Timestamp when the job observation was collected.
+        tests:
+          - not_null

@@ -1,0 +1,38 @@
+Metadata-Version: 2.4
+Name: job-market-warehouse
+Version: 0.1.0
+Summary: A data engineering project for live job market analytics using Adzuna, PostgreSQL, and dbt.
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: dbt-core<2.0,>=1.8
+Requires-Dist: dbt-postgres<2.0,>=1.8
+Requires-Dist: psycopg[binary]<4.0,>=3.1
+Requires-Dist: python-dotenv<2.0,>=1.0
+Requires-Dist: requests<3.0,>=2.31
+Requires-Dist: tenacity<10.0,>=8.2
+Requires-Dist: pydantic<3.0,>=2.0
+Requires-Dist: rich<15.0,>=13.0
+
+# Job Market Analytics Warehouse
+
+This project is a data engineering portfolio project built around a live job-market data source.
+
+The first production source will be the Adzuna Jobs API. The pipeline will collect job postings, store raw API data in PostgreSQL, transform it using dbt, and produce analytics marts for job-market insights such as skill demand, role trends, company hiring patterns, and data quality health.
+
+## Project Goals
+
+The project is designed to demonstrate practical data engineering skills:
+
+- API-based batch ingestion
+- raw data landing
+- metadata and batch tracking
+- dbt staging, intermediate, and mart models
+- dimensional modeling
+- incremental processing
+- dbt tests and source freshness
+- snapshots for historical changes
+- data quality monitoring
+- pipeline observability
+- retry, rollback, idempotency, and retention design
+- CI/CD and environment separation
+

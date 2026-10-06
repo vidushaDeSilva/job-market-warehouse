@@ -1,0 +1,44 @@
+version: 2
+
+seeds:
+  - name: skill_dictionary
+    description: >
+      Reference seed used for extracting skills from job titles and job
+      descriptions. One row represents one alias or matching rule for a skill.
+    columns:
+      - name: skill_name
+        description: Normalized skill name.
+        tests:
+          - not_null
+
+      - name: skill_category
+        description: Higher-level skill category.
+        tests:
+          - not_null
+
+      - name: alias
+        description: Text alias used to detect the skill.
+        tests:
+          - not_null
+
+      - name: match_type
+        description: Matching strategy used for the alias.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["word_boundary", "phrase", "regex"]
+
+      - name: alias_regex
+        description: PostgreSQL regular expression used for matching.
+        tests:
+          - not_null
+
+      - name: is_case_sensitive
+        description: Whether the match should be case-sensitive.
+        tests:
+          - not_null
+
+      - name: is_active
+        description: Whether this alias is active for extraction.
+        tests:
+          - not_null

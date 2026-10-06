@@ -1,0 +1,17 @@
+README.md
+pyproject.toml
+ingestion/src/job_market/__init__.py
+ingestion/src/job_market/config.py
+ingestion/src/job_market/db.py
+ingestion/src/job_market/errors.py
+ingestion/src/job_market/repository.py
+ingestion/src/job_market/utils.py
+ingestion/src/job_market/adzuna/__init__.py
+ingestion/src/job_market/adzuna/client.py
+ingestion/src/job_market/ingestion/__init__.py
+ingestion/src/job_market/ingestion/adzuna_loader.py
+ingestion/src/job_market_warehouse.egg-info/PKG-INFO
+ingestion/src/job_market_warehouse.egg-info/SOURCES.txt
+ingestion/src/job_market_warehouse.egg-info/dependency_links.txt
+ingestion/src/job_market_warehouse.egg-info/requires.txt
+ingestion/src/job_market_warehouse.egg-info/top_level.txt

@@ -1,0 +1,248 @@
+version: 2
+
+models:
+  - name: int_job_posting_deduped
+    description: >
+      Canonical deduplicated job posting model. One row represents one stable
+      job entity derived from one or more raw Adzuna observations. Repeated
+      observations of the same job are collapsed into one row using a
+      deterministic identity hierarchy.
+
+    columns:
+      - name: job_id
+        description: >
+          Stable deterministic job identifier generated from identity_type and
+          identity_value. This is not generated using row numbers.
+        tests:
+          - not_null
+          - unique
+
+      - name: identity_type
+        description: >
+          Identity strategy used to form the canonical job: adzuna_job_id,
+          normalized_url, or natural_key_hash.
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["adzuna_job_id", "normalized_url", "natural_key_hash"]
+
+      - name: identity_value
+        description: >
+          Actual identity value used to generate job_id.
+        tests:
+          - not_null
+
+      - name: latest_source_observation_id
+        description: >
+          Source observation selected as the latest representative row for this
+          canonical job.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_adzuna_jobs')
+              field: source_observation_id
+
+      - name: latest_batch_id
+        description: Latest SUCCESS ingestion batch in which this job was observed.
+        tests:
+          - not_null
+
+      - name: job_title
+        description: Latest observed cleaned job title.
+        tests:
+          - not_null
+
+      - name: company_name
+        description: Latest observed cleaned company name.
+        tests:
+          - not_null
+
+      - name: description_text_clean
+        description: Latest cleaned job description.
+        tests:
+          - not_null
+
+      - name: first_seen_at
+        description: First time this canonical job was observed by the pipeline.
+        tests:
+          - not_null
+
+      - name: last_seen_at
+        description: Most recent time this canonical job was observed by the pipeline.
+        tests:
+          - not_null
+
+      - name: observation_count
+        description: Number of staged observations collapsed into this canonical job.
+        tests:
+          - not_null
+
+      - name: latest_collected_at
+        description: Collection timestamp of the latest selected observation.
+        tests:
+          - not_null
+
+      - name: country_code
+        description: Country code used in the Adzuna search query.
+        tests:
+          - not_null
+
+      - name: latest_record_hash
+        description: Record hash from the latest selected source observation.
+        tests:
+          - not_null
+
+  - name: int_salary_normalized
+    description: >
+      Normalized salary model. One row per canonical job. Preserves raw salary
+      fields while adding salary status, midpoint, currency, period, and source
+      fields that make assumptions explicit.
+    columns:
+      - name: job_id
+        description: Canonical job identifier.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('int_job_posting_deduped')
+              field: job_id
+
+      - name: salary_parse_status
+        description: Status describing how salary fields should be interpreted.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - missing
+                - parsed
+                - partial_min_only
+                - partial_max_only
+                - invalid_range
+
+      - name: salary_currency_source
+        description: Describes whether the salary currency was inferred or unavailable.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - country_code_inferred
+                - not_available
+                - unknown
+
+      - name: salary_period_source
+        description: Describes whether the salary period was assumed or unavailable.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - project_assumption_adzuna_salary_fields
+                - not_available
+
+  - name: int_role_classification
+    description: >
+      Rule-based role classification model. One row per canonical job. Converts
+      messy job titles and descriptions into standardized role families,
+      seniority levels, and work modes.
+    columns:
+      - name: job_id
+        description: Canonical job identifier.
+        tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('int_job_posting_deduped')
+              field: job_id
+
+      - name: role_family
+        description: Standardized analytical role family.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - data_engineering
+                - analytics_engineering
+                - data_analytics
+                - data_science
+                - software_engineering
+                - other
+                - unknown
+
+      - name: seniority_level
+        description: Standardized seniority level derived from title/description.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - internship
+                - entry
+                - mid
+                - senior
+                - lead
+                - unknown
+
+      - name: work_mode
+        description: Remote/hybrid/onsite classification when available.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - remote
+                - hybrid
+                - onsite
+                - unknown
+
+      - name: classification_confidence
+        description: Simple confidence label for the rule-based classification.
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - high
+                - medium
+                - low
+
+  - name: int_job_skill_matches
+    description: >
+      Skill extraction model. One row per canonical job x normalized skill.
+      Uses the skill_dictionary seed to match aliases in job titles and
+      descriptions.
+    columns:
+      - name: skill_id
+        description: Deterministic skill identifier generated from skill_name.
+        tests:
+          - not_null
+
+      - name: job_id
+        description: Canonical job identifier.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('int_job_posting_deduped')
+              field: job_id
+
+      - name: skill_name
+        description: Normalized skill name.
+        tests:
+          - not_null
+          - relationships:
+              to: ref('skill_dictionary')
+              field: skill_name
+
+      - name: skill_category
+        description: Higher-level skill category.
+        tests:
+          - not_null
+
+      - name: matched_alias_count
+        description: Number of active aliases that matched this job for the skill.
+        tests:
+          - not_null
+
+      - name: matched_aliases
+        description: Comma-separated aliases that matched the job text.
+        tests:
+          - not_null
+
+
+
+         

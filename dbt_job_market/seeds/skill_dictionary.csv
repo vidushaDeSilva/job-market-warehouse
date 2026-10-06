@@ -1,0 +1,42 @@
+skill_name,skill_category,alias,match_type,alias_regex,is_case_sensitive,is_active
+Python,Programming,python,word_boundary,(^|[^a-z0-9_])python([^a-z0-9_]|$),false,true
+SQL,Database,sql,word_boundary,(^|[^a-z0-9_])sql([^a-z0-9_]|$),false,true
+dbt,Data Engineering,dbt,word_boundary,(^|[^a-z0-9_])dbt([^a-z0-9_]|$),false,true
+Airflow,Orchestration,airflow,word_boundary,(^|[^a-z0-9_])airflow([^a-z0-9_]|$),false,true
+Airflow,Orchestration,apache airflow,phrase,(^|[^a-z0-9_])apache airflow([^a-z0-9_]|$),false,true
+Spark,Big Data,spark,word_boundary,(^|[^a-z0-9_])spark([^a-z0-9_]|$),false,true
+Spark,Big Data,apache spark,phrase,(^|[^a-z0-9_])apache spark([^a-z0-9_]|$),false,true
+PySpark,Big Data,pyspark,word_boundary,(^|[^a-z0-9_])pyspark([^a-z0-9_]|$),false,true
+Kafka,Streaming,kafka,word_boundary,(^|[^a-z0-9_])kafka([^a-z0-9_]|$),false,true
+Kafka,Streaming,apache kafka,phrase,(^|[^a-z0-9_])apache kafka([^a-z0-9_]|$),false,true
+AWS,Cloud,aws,word_boundary,(^|[^a-z0-9_])aws([^a-z0-9_]|$),false,true
+AWS,Cloud,amazon web services,phrase,(^|[^a-z0-9_])amazon web services([^a-z0-9_]|$),false,true
+Azure,Cloud,azure,word_boundary,(^|[^a-z0-9_])azure([^a-z0-9_]|$),false,true
+GCP,Cloud,gcp,word_boundary,(^|[^a-z0-9_])gcp([^a-z0-9_]|$),false,true
+GCP,Cloud,google cloud,phrase,(^|[^a-z0-9_])google cloud([^a-z0-9_]|$),false,true
+Docker,DevOps,docker,word_boundary,(^|[^a-z0-9_])docker([^a-z0-9_]|$),false,true
+Kubernetes,DevOps,kubernetes,word_boundary,(^|[^a-z0-9_])kubernetes([^a-z0-9_]|$),false,true
+Kubernetes,DevOps,k8s,word_boundary,(^|[^a-z0-9_])k8s([^a-z0-9_]|$),false,true
+Terraform,DevOps,terraform,word_boundary,(^|[^a-z0-9_])terraform([^a-z0-9_]|$),false,true
+PostgreSQL,Database,postgresql,word_boundary,(^|[^a-z0-9_])postgresql([^a-z0-9_]|$),false,true
+PostgreSQL,Database,postgres,word_boundary,(^|[^a-z0-9_])postgres([^a-z0-9_]|$),false,true
+MySQL,Database,mysql,word_boundary,(^|[^a-z0-9_])mysql([^a-z0-9_]|$),false,true
+Snowflake,Data Warehouse,snowflake,word_boundary,(^|[^a-z0-9_])snowflake([^a-z0-9_]|$),false,true
+BigQuery,Data Warehouse,bigquery,word_boundary,(^|[^a-z0-9_])bigquery([^a-z0-9_]|$),false,true
+Redshift,Data Warehouse,redshift,word_boundary,(^|[^a-z0-9_])redshift([^a-z0-9_]|$),false,true
+Tableau,Business Intelligence,tableau,word_boundary,(^|[^a-z0-9_])tableau([^a-z0-9_]|$),false,true
+Power BI,Business Intelligence,power bi,phrase,(^|[^a-z0-9_])power bi([^a-z0-9_]|$),false,true
+Excel,Business Intelligence,excel,word_boundary,(^|[^a-z0-9_])excel([^a-z0-9_]|$),false,true
+Git,Software Engineering,git,word_boundary,(^|[^a-z0-9_])git([^a-z0-9_]|$),false,true
+Linux,Operating System,linux,word_boundary,(^|[^a-z0-9_])linux([^a-z0-9_]|$),false,true
+Java,Programming,java,word_boundary,(^|[^a-z0-9_])java([^a-z0-9_]|$),false,true
+Scala,Programming,scala,word_boundary,(^|[^a-z0-9_])scala([^a-z0-9_]|$),false,true
+C++,Programming,c++,regex,(^|[^a-z0-9_])c\+\+([^a-z0-9_]|$),false,true
+C#,Programming,c#,regex,(^|[^a-z0-9_])c#([^a-z0-9_]|$),false,true
+JavaScript,Programming,javascript,word_boundary,(^|[^a-z0-9_])javascript([^a-z0-9_]|$),false,true
+TypeScript,Programming,typescript,word_boundary,(^|[^a-z0-9_])typescript([^a-z0-9_]|$),false,true
+Machine Learning,Machine Learning,machine learning,phrase,(^|[^a-z0-9_])machine learning([^a-z0-9_]|$),false,true
+TensorFlow,Machine Learning,tensorflow,word_boundary,(^|[^a-z0-9_])tensorflow([^a-z0-9_]|$),false,true
+PyTorch,Machine Learning,pytorch,word_boundary,(^|[^a-z0-9_])pytorch([^a-z0-9_]|$),false,true
+R,Programming,r,word_boundary,(^|[^a-z0-9_])r([^a-z0-9_]|$),false,false
+Go,Programming,go,word_boundary,(^|[^a-z0-9_])go([^a-z0-9_]|$),false,false
