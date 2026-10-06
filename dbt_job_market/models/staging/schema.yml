@@ -106,3 +106,64 @@ models:
         description: Timestamp when the job observation was collected.
         tests:
           - not_null
+
+  - name: stg_pipeline_runs
+    description: >
+      Cleaned operational pipeline run metadata. One row per observed pipeline execution.
+    columns:
+      - name: pipeline_run_id
+        tests:
+          - not_null
+          - unique
+
+      - name: pipeline_name
+        tests:
+          - not_null
+
+      - name: pipeline_status
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["STARTED", "SUCCESS", "FAILED", "PARTIAL"]
+
+      - name: pipeline_started_at
+        tests:
+          - not_null
+
+      - name: tests_passed
+        tests:
+          - not_null
+
+      - name: tests_failed
+        tests:
+          - not_null
+
+  - name: stg_adzuna_api_responses
+    description: >
+      Cleaned Adzuna API response metadata. One row per API request/page.
+    columns:
+      - name: api_response_id
+        tests:
+          - not_null
+          - unique
+
+      - name: batch_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_ingestion_batches')
+              field: batch_id
+
+      - name: response_status_code
+        tests:
+          - not_null
+
+      - name: response_status_group
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["2xx", "3xx", "4xx", "5xx", "unknown"]
+
+      - name: records_returned
+        tests:
+          - not_null

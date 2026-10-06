@@ -38,3 +38,7 @@ temp/
 # Editor settings
 .vscode/
 .idea/.job/
+
+
+*.egg-info/
+ingestion/src/*.egg-info/

@@ -1,8 +1,0 @@
-dbt-core<2.0,>=1.8
-dbt-postgres<2.0,>=1.8
-psycopg[binary]<4.0,>=3.1
-python-dotenv<2.0,>=1.0
-requests<3.0,>=2.31
-tenacity<10.0,>=8.2
-pydantic<3.0,>=2.0
-rich<15.0,>=13.0
