@@ -50,3 +50,5 @@ ingestion/src/*.egg-info/
 dbt_job_market/target/
 dbt_job_market/logs/
 dbt_job_market/dbt_packages/
+
+poetry.lock
