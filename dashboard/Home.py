@@ -7,7 +7,6 @@ Job Market Overview dashboard page.
 from __future__ import annotations
 
 import streamlit as st
-
 from components import (
     format_int,
     format_percentage,
