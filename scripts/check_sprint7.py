@@ -18,7 +18,6 @@ from rich.panel import Panel
 
 from job_market.db import get_connection
 
-
 console = Console()
 
 
@@ -186,9 +185,7 @@ def main() -> None:
         failures.append("fact_job_postings does not match canonical job count.")
 
     if counts["fact_job_skill_mentions"] != counts["intermediate_skill_matches"]:
-        failures.append(
-            "fact_job_skill_mentions does not match intermediate skill match count."
-        )
+        failures.append("fact_job_skill_mentions does not match intermediate skill match count.")
 
     if counts["duplicate_fact_jobs"] > 0:
         failures.append("Duplicate job_id values found in fact_job_postings.")

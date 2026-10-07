@@ -17,7 +17,6 @@ from rich.panel import Panel
 
 from job_market.db import get_connection
 
-
 console = Console()
 
 
@@ -105,9 +104,7 @@ def main() -> None:
         failures.append("No canonical jobs found.")
 
     if counts["canonical_job_count"] > counts["staged_observation_count"]:
-        failures.append(
-            "Canonical job count is greater than staged observation count."
-        )
+        failures.append("Canonical job count is greater than staged observation count.")
 
     if counts["duplicate_job_id_count"] > 0:
         failures.append("Duplicate job_id values found.")

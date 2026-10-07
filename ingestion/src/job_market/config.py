@@ -11,9 +11,9 @@ Sprint 3 adds Adzuna reliability settings such as timeout, retry count,
 backoff timing, and pause between requests.
 """
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
-import os
 
 from dotenv import load_dotenv
 
@@ -202,12 +202,6 @@ def debug_config() -> None:
     print(f"DATABASE_URL: {masked_database_url}")
     print(f"ADZUNA_TIMEOUT_SECONDS: {settings.adzuna_timeout_seconds}")
     print(f"ADZUNA_MAX_RETRIES: {settings.adzuna_max_retries}")
-    print(
-        "ADZUNA_RETRY_BACKOFF_INITIAL_SECONDS: "
-        f"{settings.adzuna_retry_backoff_initial_seconds}"
-    )
-    print(
-        "ADZUNA_RETRY_BACKOFF_MAX_SECONDS: "
-        f"{settings.adzuna_retry_backoff_max_seconds}"
-    )
+    print(f"ADZUNA_RETRY_BACKOFF_INITIAL_SECONDS: {settings.adzuna_retry_backoff_initial_seconds}")
+    print(f"ADZUNA_RETRY_BACKOFF_MAX_SECONDS: {settings.adzuna_retry_backoff_max_seconds}")
     print(f"ADZUNA_REQUEST_PAUSE_SECONDS: {settings.adzuna_request_pause_seconds}")

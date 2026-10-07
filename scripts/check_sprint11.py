@@ -18,7 +18,6 @@ from rich.panel import Panel
 
 from job_market.db import get_connection
 
-
 console = Console()
 
 
@@ -129,10 +128,7 @@ def main() -> None:
         failures.append("Snapshot history retention must be at least 365 days.")
 
     if summary["missing_policies"]:
-        failures.append(
-            "Missing required policies: "
-            + ", ".join(summary["missing_policies"])
-        )
+        failures.append("Missing required policies: " + ", ".join(summary["missing_policies"]))
 
     if failures:
         console.print(

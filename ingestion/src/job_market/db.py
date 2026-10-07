@@ -10,8 +10,8 @@ independently.
 Sprint 1 also adds support for executing SQL migration/setup files.
 """
 
-from contextlib import contextmanager
 from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 
 import psycopg
@@ -65,9 +65,7 @@ def check_database_connection() -> dict[str, str]:
             row = cursor.fetchone()
 
     if row is None:
-        raise RuntimeError(
-            "Database connection succeeded but PostgreSQL returned no metadata."
-        )
+        raise RuntimeError("Database connection succeeded but PostgreSQL returned no metadata.")
 
     return {
         "database_name": row[0],

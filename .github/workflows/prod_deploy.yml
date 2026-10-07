@@ -1,0 +1,80 @@
+name: Production dbt Deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-prod:
+    name: Deploy dbt models to production
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 30
+
+    environment:
+      name: production
+
+    env:
+      APP_ENV: prod
+
+      DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+
+      POSTGRES_HOST: ${{ secrets.PROD_POSTGRES_HOST }}
+      POSTGRES_PORT: ${{ secrets.PROD_POSTGRES_PORT }}
+      POSTGRES_USER: ${{ secrets.PROD_POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.PROD_POSTGRES_PASSWORD }}
+      POSTGRES_DB: ${{ secrets.PROD_POSTGRES_DB }}
+      POSTGRES_SSLMODE: require
+
+      PROD_POSTGRES_HOST: ${{ secrets.PROD_POSTGRES_HOST }}
+      PROD_POSTGRES_PORT: ${{ secrets.PROD_POSTGRES_PORT }}
+      PROD_POSTGRES_USER: ${{ secrets.PROD_POSTGRES_USER }}
+      PROD_POSTGRES_PASSWORD: ${{ secrets.PROD_POSTGRES_PASSWORD }}
+      PROD_POSTGRES_DB: ${{ secrets.PROD_POSTGRES_DB }}
+      PROD_POSTGRES_SSLMODE: require
+
+      DBT_SCHEMA: prod
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install project
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: dbt deps
+        run: |
+          dbt deps --project-dir dbt_job_market --profiles-dir dbt_job_market
+
+      - name: dbt parse prod
+        run: |
+          dbt parse --project-dir dbt_job_market --profiles-dir dbt_job_market --target prod
+
+      - name: dbt compile prod
+        run: |
+          dbt compile --project-dir dbt_job_market --profiles-dir dbt_job_market --target prod
+
+      - name: dbt build prod
+        run: |
+          dbt build --project-dir dbt_job_market --profiles-dir dbt_job_market --target prod
+
+      - name: dbt snapshot prod
+        run: |
+          dbt snapshot --project-dir dbt_job_market --profiles-dir dbt_job_market --target prod
+
+      - name: Upload dbt artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbt-prod-artifacts
+          path: |
+            dbt_job_market/logs
+            dbt_job_market/target
+          if-no-files-found: ignore

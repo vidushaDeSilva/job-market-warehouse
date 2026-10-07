@@ -17,6 +17,5 @@ Before running this script, make sure:
 
 from job_market.ingestion.adzuna_loader import run_adzuna_ingestion
 
-
 if __name__ == "__main__":
     run_adzuna_ingestion()

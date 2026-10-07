@@ -21,11 +21,10 @@ This is intentionally a simple Python orchestrator rather than Airflow.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import json
 import os
-from pathlib import Path
 import subprocess
+from dataclasses import dataclass
 from uuid import UUID
 
 from dotenv import dotenv_values
@@ -41,7 +40,6 @@ from job_market.repository import (
     mark_pipeline_run_failed,
     mark_pipeline_run_success,
 )
-
 
 console = Console()
 
@@ -174,8 +172,7 @@ def run_command(
 
     if result.returncode != 0 and not allow_failure:
         raise RuntimeError(
-            f"{step_name} failed with exit code {result.returncode}: "
-            f"{' '.join(command)}"
+            f"{step_name} failed with exit code {result.returncode}: {' '.join(command)}"
         )
 
     return command_result
@@ -263,8 +260,7 @@ def validate_ingestion_batch(batch_id: UUID | None) -> dict:
 
     if batch_summary["records_loaded"] <= 0:
         raise RuntimeError(
-            "Ingestion batch succeeded but loaded zero records. "
-            f"Batch ID: {batch_id}"
+            f"Ingestion batch succeeded but loaded zero records. Batch ID: {batch_id}"
         )
 
     return batch_summary
@@ -406,9 +402,7 @@ def main() -> None:
     dbt_target = get_env_value("ORCHESTRATOR_DBT_TARGET", "dev")
 
     if trigger_type not in {"MANUAL", "SCHEDULED", "CI"}:
-        raise ValueError(
-            "ORCHESTRATOR_TRIGGER_TYPE must be one of MANUAL, SCHEDULED, CI."
-        )
+        raise ValueError("ORCHESTRATOR_TRIGGER_TYPE must be one of MANUAL, SCHEDULED, CI.")
 
     git_sha = get_git_sha()
 
@@ -455,9 +449,7 @@ def main() -> None:
         dbt_summary = run_dbt_build(dbt_target)
 
         if dbt_summary.tests_failed > 0:
-            raise RuntimeError(
-                f"dbt build completed but {dbt_summary.tests_failed} tests failed."
-            )
+            raise RuntimeError(f"dbt build completed but {dbt_summary.tests_failed} tests failed.")
 
         run_dbt_snapshot(dbt_target)
 

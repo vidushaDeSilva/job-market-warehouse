@@ -1,9 +1,3 @@
-# profiles.yml
-# dbt connection profile for PostgreSQL/Neon.
-#
-# Credentials are read from environment variables in .env.
-# The Makefile loads .env before running dbt commands.
-
 job_market_profile:
   target: dev
 
@@ -19,13 +13,24 @@ job_market_profile:
       threads: 4
       sslmode: "{{ env_var('POSTGRES_SSLMODE', 'require') }}"
 
-    prod:
+    ci:
       type: postgres
       host: "{{ env_var('POSTGRES_HOST') }}"
       port: "{{ env_var('POSTGRES_PORT', '5432') | int }}"
       user: "{{ env_var('POSTGRES_USER') }}"
       pass: "{{ env_var('POSTGRES_PASSWORD') }}"
       dbname: "{{ env_var('POSTGRES_DB') }}"
-      schema: "{{ env_var('DBT_SCHEMA', 'prod') }}"
+      schema: "{{ env_var('DBT_SCHEMA') }}"
       threads: 4
       sslmode: "{{ env_var('POSTGRES_SSLMODE', 'require') }}"
+
+    prod:
+      type: postgres
+      host: "{{ env_var('PROD_POSTGRES_HOST', env_var('POSTGRES_HOST')) }}"
+      port: "{{ env_var('PROD_POSTGRES_PORT', env_var('POSTGRES_PORT', '5432')) | int }}"
+      user: "{{ env_var('PROD_POSTGRES_USER', env_var('POSTGRES_USER')) }}"
+      pass: "{{ env_var('PROD_POSTGRES_PASSWORD', env_var('POSTGRES_PASSWORD')) }}"
+      dbname: "{{ env_var('PROD_POSTGRES_DB', env_var('POSTGRES_DB')) }}"
+      schema: "{{ env_var('DBT_SCHEMA', 'prod') }}"
+      threads: 4
+      sslmode: "{{ env_var('PROD_POSTGRES_SSLMODE', env_var('POSTGRES_SSLMODE', 'require')) }}"

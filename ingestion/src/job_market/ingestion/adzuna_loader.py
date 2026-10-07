@@ -20,9 +20,9 @@ This sprint hardens ingestion but still does not run dbt transformations.
 
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass
 from datetime import timedelta
-import time
 from typing import Any
 from uuid import UUID
 
@@ -49,7 +49,6 @@ from job_market.repository import (
     upsert_source_collection_state,
 )
 from job_market.utils import sha256_json, sha256_text, utc_now
-
 
 console = Console()
 
@@ -227,11 +226,7 @@ def get_latest_source_created_at(job_rows: list[dict[str, Any]]) -> str | None:
     Return the latest source_created_at value from loaded job rows.
     """
 
-    values = [
-        row["source_created_at"]
-        for row in job_rows
-        if row.get("source_created_at")
-    ]
+    values = [row["source_created_at"] for row in job_rows if row.get("source_created_at")]
 
     if not values:
         return None
@@ -491,10 +486,7 @@ def ingest_query_config(
         last_successful_page = page_number
 
         console.print(
-            (
-                f"  Loaded {loaded_this_page} jobs, "
-                f"quarantined {quarantined_this_page} jobs"
-            )
+            (f"  Loaded {loaded_this_page} jobs, quarantined {quarantined_this_page} jobs")
         )
 
         if len(jobs) == 0:

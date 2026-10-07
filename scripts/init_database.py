@@ -17,7 +17,6 @@ from rich.panel import Panel
 
 from job_market.db import execute_sql_file
 
-
 console = Console()
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -43,9 +42,7 @@ def main() -> None:
     sql_files = get_sql_files()
 
     if not sql_files:
-        console.print(
-            "[bold yellow]No database SQL files were found.[/bold yellow]"
-        )
+        console.print("[bold yellow]No database SQL files were found.[/bold yellow]")
         raise SystemExit(1)
 
     console.print("[bold cyan]Initializing project database...[/bold cyan]\n")

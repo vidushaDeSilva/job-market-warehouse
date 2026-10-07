@@ -1,0 +1,93 @@
+name: Pull Request CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+  push:
+    branches:
+      - main
+
+jobs:
+  python-and-dbt-ci:
+    name: Python and dbt CI
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 30
+
+    concurrency:
+      group: pr-ci-${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+
+    env:
+      APP_ENV: ci
+
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+      POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      POSTGRES_SSLMODE: require
+
+      DBT_SCHEMA: ci_${{ github.run_id }}_${{ github.run_attempt }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install project with dev dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Python lint
+        run: |
+          ruff check .
+
+      - name: Python tests
+        run: |
+          pytest
+
+      - name: Initialize database foundation
+        run: |
+          make db-init
+
+      - name: dbt deps
+        run: |
+          dbt deps --project-dir dbt_job_market --profiles-dir dbt_job_market
+
+      - name: dbt parse
+        run: |
+          dbt parse --project-dir dbt_job_market --profiles-dir dbt_job_market --target ci
+
+      - name: dbt compile
+        run: |
+          dbt compile --project-dir dbt_job_market --profiles-dir dbt_job_market --target ci
+
+      - name: dbt build in CI schema
+        run: |
+          dbt build --project-dir dbt_job_market --profiles-dir dbt_job_market --target ci
+
+      - name: Clean temporary CI schemas
+        if: always()
+        run: |
+          python scripts/drop_dbt_ci_schemas.py
+
+      - name: Upload dbt artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dbt-ci-artifacts
+          path: |
+            dbt_job_market/logs
+            dbt_job_market/target
+          if-no-files-found: ignore

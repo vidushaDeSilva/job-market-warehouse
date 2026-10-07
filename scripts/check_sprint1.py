@@ -14,7 +14,6 @@ from rich.panel import Panel
 
 from job_market.db import get_connection
 
-
 console = Console()
 
 
@@ -88,8 +87,7 @@ def main() -> None:
 
     if missing_tables:
         formatted_missing = "\n".join(
-            f"- {schema}.{table}"
-            for schema, table in sorted(missing_tables)
+            f"- {schema}.{table}" for schema, table in sorted(missing_tables)
         )
 
         console.print(
@@ -117,10 +115,7 @@ def main() -> None:
 
         raise SystemExit(1)
 
-    table_names = "\n".join(
-        f"✓ {schema}.{table}"
-        for schema, table in sorted(EXPECTED_TABLES)
-    )
+    table_names = "\n".join(f"✓ {schema}.{table}" for schema, table in sorted(EXPECTED_TABLES))
 
     console.print(
         Panel.fit(

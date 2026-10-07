@@ -41,6 +41,13 @@ DBT := dbt
 	sprint11-check \
 	orchestrated-pipeline \
 	sprint13-check \
+	lint \
+	test \
+	dbt-deps \
+	dbt-compile \
+	dbt-build-ci \
+	ci-check \
+	drop-ci-schemas \
 	clean
 
 
@@ -178,3 +185,33 @@ orchestrated-pipeline:
 
 sprint13-check:
 	$(PYTHON) scripts/check_sprint13.py
+
+
+lint:
+	ruff check .
+
+
+test:
+	pytest
+
+
+dbt-deps:
+	set -a; [ -f .env ] && . ./.env; set +a; \
+	$(DBT) deps --project-dir dbt_job_market --profiles-dir dbt_job_market
+
+
+dbt-compile:
+	set -a; [ -f .env ] && . ./.env; set +a; \
+	$(DBT) compile --project-dir dbt_job_market --profiles-dir dbt_job_market
+
+
+dbt-build-ci:
+	set -a; [ -f .env ] && . ./.env; set +a; \
+	DBT_SCHEMA=ci_local $(DBT) build --project-dir dbt_job_market --profiles-dir dbt_job_market --target ci
+
+
+drop-ci-schemas:
+	$(PYTHON) scripts/drop_dbt_ci_schemas.py
+
+
+ci-check: lint test dbt-deps dbt-parse dbt-compile

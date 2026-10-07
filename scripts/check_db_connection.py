@@ -15,7 +15,6 @@ from rich.panel import Panel
 
 from job_market.db import check_database_connection
 
-
 console = Console()
 
 

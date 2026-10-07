@@ -28,3 +28,25 @@ package-dir = {"" = "ingestion/src"}
 
 [tool.setuptools.packages.find]
 where = ["ingestion/src"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0,<9.0",
+    "ruff>=0.6,<1.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["ingestion/tests"]
+pythonpath = ["ingestion/src"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+ignore = []
+
+[tool.ruff.lint.isort]
+known-first-party = ["job_market"]

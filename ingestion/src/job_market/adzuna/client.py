@@ -29,7 +29,6 @@ from job_market.errors import (
     MissingAdzunaCredentialsError,
 )
 
-
 ADZUNA_BASE_URL = "https://api.adzuna.com/v1/api/jobs"
 
 RETRYABLE_STATUS_CODES = {500, 502, 503, 504}
@@ -110,10 +109,7 @@ class AdzunaClient:
             AdzunaResponseFormatError: Response JSON is invalid or unexpected.
         """
 
-        url = (
-            f"{ADZUNA_BASE_URL}/"
-            f"{request.country_code.lower()}/search/{request.page_number}"
-        )
+        url = f"{ADZUNA_BASE_URL}/{request.country_code.lower()}/search/{request.page_number}"
 
         params = {
             "app_id": self.app_id,
@@ -177,9 +173,7 @@ class AdzunaClient:
             ) from exc
 
         if not isinstance(response_json, dict):
-            raise AdzunaResponseFormatError(
-                "Adzuna response JSON was not an object/dictionary."
-            )
+            raise AdzunaResponseFormatError("Adzuna response JSON was not an object/dictionary.")
 
         return AdzunaSearchResponse(
             status_code=response.status_code,

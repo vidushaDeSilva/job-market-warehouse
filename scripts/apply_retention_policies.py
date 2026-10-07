@@ -26,7 +26,6 @@ from rich.table import Table
 from job_market.config import PROJECT_ROOT
 from job_market.db import get_connection
 
-
 console = Console()
 
 
@@ -109,11 +108,7 @@ def load_enabled_policies(selected_policy_names: set[str] | None) -> list[Retent
     if selected_policy_names is None:
         return policies
 
-    return [
-        policy
-        for policy in policies
-        if policy.policy_name in selected_policy_names
-    ]
+    return [policy for policy in policies if policy.policy_name in selected_policy_names]
 
 
 def table_exists(schema_name: str, table_name: str) -> bool:
@@ -448,9 +443,7 @@ def apply_snapshot_history(
         WHERE dbt_valid_to IS NOT NULL
           AND dbt_valid_to < NOW() - (%(retention_days)s * INTERVAL '1 day');
         """
-    ).format(
-        snapshot_table=sql.Identifier(snapshot_schema, snapshot_table)
-    )
+    ).format(snapshot_table=sql.Identifier(snapshot_schema, snapshot_table))
 
     delete_query = sql.SQL(
         """
@@ -458,9 +451,7 @@ def apply_snapshot_history(
         WHERE dbt_valid_to IS NOT NULL
           AND dbt_valid_to < NOW() - (%(retention_days)s * INTERVAL '1 day');
         """
-    ).format(
-        snapshot_table=sql.Identifier(snapshot_schema, snapshot_table)
-    )
+    ).format(snapshot_table=sql.Identifier(snapshot_schema, snapshot_table))
 
     eligible_count, deleted_count = count_then_delete(
         count_query=count_query,
@@ -648,10 +639,7 @@ def main() -> None:
         console.print("[red]No enabled retention policies found.[/red]")
         raise SystemExit(1)
 
-    results = [
-        apply_policy(policy, execute=execute)
-        for policy in policies
-    ]
+    results = [apply_policy(policy, execute=execute) for policy in policies]
 
     render_results(results)
 
