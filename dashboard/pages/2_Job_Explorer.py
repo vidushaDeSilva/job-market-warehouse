@@ -9,7 +9,6 @@ Because this page displays job-level records, Adzuna attribution is shown.
 from __future__ import annotations
 
 import streamlit as st
-
 from components import (
     render_adzuna_listing_attribution,
     render_adzuna_research_attribution,

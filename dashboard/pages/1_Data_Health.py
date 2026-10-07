@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import pandas as pd
 import streamlit as st
-
 from components import format_int, format_percentage, show_missing_data_warning
 from db import marts_table, run_query
 
