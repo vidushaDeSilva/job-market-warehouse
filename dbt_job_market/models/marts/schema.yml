@@ -796,3 +796,47 @@ models:
       - name: duplicate_rate_warning
         tests:
           - not_null
+
+  - name: mart_job_market_overview
+    description: >
+      Dashboard-ready one-row overview of current job market metrics.
+    columns:
+      - name: generated_at
+        tests:
+          - not_null
+
+      - name: total_unique_jobs
+        tests:
+          - not_null
+
+      - name: jobs_collected_this_week
+        tests:
+          - not_null
+
+      - name: remote_share
+        tests:
+          - not_null
+
+      - name: salary_coverage
+        tests:
+          - not_null
+
+  - name: mart_salary_distribution
+    description: >
+      Dashboard-ready salary bucket distribution.
+    columns:
+      - name: salary_currency
+        tests:
+          - not_null
+
+      - name: salary_bucket
+        tests:
+          - not_null
+
+      - name: salary_bucket_sort
+        tests:
+          - not_null
+
+      - name: job_count
+        tests:
+          - not_null

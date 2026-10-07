@@ -48,6 +48,8 @@ DBT := dbt
 	dbt-build-ci \
 	ci-check \
 	drop-ci-schemas \
+	dashboard \
+	sprint15-check \
 	clean
 
 
@@ -215,3 +217,11 @@ drop-ci-schemas:
 
 
 ci-check: lint test dbt-deps dbt-parse dbt-compile
+
+
+dashboard:
+	$(PYTHON) -m streamlit run dashboard/Home.py
+
+
+sprint15-check: dbt-build
+	$(PYTHON) scripts/check_sprint15.py
